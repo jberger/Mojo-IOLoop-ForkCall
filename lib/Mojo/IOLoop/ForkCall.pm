@@ -20,10 +20,16 @@ has 'deserialize' => sub { \&Storable::thaw   };
 
 sub new { 
   my $class = shift;
-  if (@_ == 1 and ref $_[0] eq 'CODE') {
+  if (ref $_[0] eq 'CODE') {
     unshift @_, 'job';
   }
-  return $class->SUPER::new(@_);
+  my $cb;
+  if (@_ % 2 and ref $_[-1] eq 'CODE') {
+    $cb = pop;
+  }
+  my $self = $class->SUPER::new(@_);
+  $self->on( finish => $cb ) if $cb;
+  return $self;
 }
 
 sub start {
