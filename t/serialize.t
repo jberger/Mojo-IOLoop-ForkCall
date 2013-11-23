@@ -24,3 +24,6 @@ $fc->ioloop->start;
 
 ok $received, 'received something from child' and diag "got: $received";
 is_deeply \@res, ['Lived'] or diag 'error: '.$err;
+
+done_testing;
+
