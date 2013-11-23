@@ -35,5 +35,10 @@ subtest 'Pairs plus finish cb' => sub {
   verify( $fc );
 };
 
+subtest 'Hashref plus finish cb' => sub {
+  my $fc = Mojo::IOLoop::ForkCall->new({ job => $job }, $cb );
+  verify( $fc );
+};
+
 done_testing;
 

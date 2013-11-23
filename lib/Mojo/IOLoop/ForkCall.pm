@@ -18,13 +18,14 @@ has 'job';
 has 'serialize'   => sub { \&Storable::freeze };
 has 'deserialize' => sub { \&Storable::thaw   };
 
-sub new { 
+sub new {
+  no warnings 'uninitialized';
   my $class = shift;
   if (ref $_[0] eq 'CODE') {
     unshift @_, 'job';
   }
   my $cb;
-  if (@_ % 2 and ref $_[-1] eq 'CODE') {
+  if (ref $_[0] eq 'HASH' ||  @_ % 2 and ref $_[-1] eq 'CODE') {
     $cb = pop;
   }
   my $self = $class->SUPER::new(@_);
