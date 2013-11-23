@@ -21,13 +21,18 @@ has 'deserialize' => sub { \&Storable::thaw   };
 sub new {
   no warnings 'uninitialized';
   my $class = shift;
+
+  # leading arg interpreted as job
   if (ref $_[0] eq 'CODE') {
     unshift @_, 'job';
   }
+
+  # trailing arg interpreted as finish callback
   my $cb;
   if (ref $_[0] eq 'HASH' ||  @_ % 2 and ref $_[-1] eq 'CODE') {
     $cb = pop;
   }
+
   my $self = $class->SUPER::new(@_);
   $self->on( finish => $cb ) if $cb;
   return $self;
