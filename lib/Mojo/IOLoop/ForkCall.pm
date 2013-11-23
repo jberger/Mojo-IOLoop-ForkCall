@@ -28,7 +28,6 @@ sub new {
 
 sub start {
   my ($self, @args) = @_;
-  my $loop = $self->ioloop;
   my $job = $self->job;
   my $serialize = $self->serialize;
 
@@ -41,12 +40,13 @@ sub start {
       $serialize->([undef, $job->(@args)]);
     };
     $res = $serialize->([$@]) if $@;
+
     $parent->write($res);
   }, pipe => 1);
 
   my $proc = $child->start;
   my $r = Mojo::IOLoop::Stream->new($proc->read_handle);
-  $loop->stream($r);
+  $self->ioloop->stream($r);
 
   my $buffer = '';
   $r->on( read  => sub { $buffer .= $_[1] } );
