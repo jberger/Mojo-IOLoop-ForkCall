@@ -15,6 +15,8 @@ our @EXPORT_OK = qw/fork_call/;
 
 has 'ioloop' => sub { Mojo::IOLoop->singleton };
 has 'job';
+has 'serialize'   => sub { \&Storable::freeze };
+has 'deserialize' => sub { \&Storable::thaw   };
 
 sub new { 
   my $class = shift;
@@ -28,6 +30,7 @@ sub start {
   my ($self, @args) = @_;
   my $loop = $self->ioloop;
   my $job = $self->job;
+  my $serialize = $self->serialize;
 
   my $child = Child->new(sub {
     my $parent = shift;
@@ -35,9 +38,9 @@ sub start {
     local $@;
     my $res = eval {
       local $SIG{__DIE__};
-      Storable::freeze([undef, $job->(@args)]);
+      $serialize->([undef, $job->(@args)]);
     };
-    $res = Storable::freeze([$@]) if $@;
+    $res = $serialize->([$@]) if $@;
     
     my $w = Mojo::IOLoop::Stream->new($parent->write_handle);
     $loop->stream($w);
@@ -49,9 +52,13 @@ sub start {
   my $proc = $child->start;
   my $r = Mojo::IOLoop::Stream->new($proc->read_handle);
   $loop->stream($r);
-  $r->on( close => sub { $proc->is_complete || $proc->kill(9); $proc->wait } );
+  $r->on( close => sub {
+      return unless $proc;
+      $proc->is_complete || $proc->kill(9); 
+      $proc->wait;
+  });
   $r->on( read  => sub { 
-    my $res = Storable::thaw($_[1]);
+    my $res = $self->deserialize->($_[1]);
     $self->emit( finish => @$res );
   });
 }
