@@ -13,8 +13,9 @@ use Exporter 'import';
 
 our @EXPORT = qw/fork_call/;
 
-sub fork_call (&&;@) {
-  my ($job, $cb, @args) = @_;
+sub fork_call (&@) {
+  my $cb = pop;
+  my ($job, @args) = @_;
 
   my $child = Child->new(sub {
     my $parent = shift;
