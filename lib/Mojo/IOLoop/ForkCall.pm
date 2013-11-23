@@ -41,25 +41,21 @@ sub start {
       $serialize->([undef, $job->(@args)]);
     };
     $res = $serialize->([$@]) if $@;
-    
-    my $w = Mojo::IOLoop::Stream->new($parent->write_handle);
-    $loop->stream($w);
-    $w->on( close => sub { exit(0) } );
-    $w->on( drain => sub { shift->close } );
     $parent->write($res);
   }, pipe => 1);
 
   my $proc = $child->start;
   my $r = Mojo::IOLoop::Stream->new($proc->read_handle);
   $loop->stream($r);
+
+  my $buffer = '';
+  $r->on( read  => sub { $buffer .= $_[1] } );
   $r->on( close => sub {
-      return unless $proc;
-      $proc->is_complete || $proc->kill(9); 
-      $proc->wait;
-  });
-  $r->on( read  => sub { 
-    my $res = $self->deserialize->($_[1]);
+    my $res = $self->deserialize->($buffer);
     $self->emit( finish => @$res );
+    return unless $proc;
+    $proc->is_complete || $proc->kill(9); 
+    $proc->wait;
   });
 }
 
