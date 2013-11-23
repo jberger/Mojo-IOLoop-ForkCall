@@ -31,7 +31,7 @@ sub start {
   my $job = $self->job;
   my $serialize = $self->serialize;
 
-  my $child = Child->new(sub {
+  my $child = $self->_child(sub {
     my $parent = shift;
 
     local $@;
@@ -42,10 +42,9 @@ sub start {
     $res = $serialize->([$@]) if $@;
 
     $parent->write($res);
-  }, pipe => 1);
+  });
 
-  my $proc = $child->start;
-  my $r = Mojo::IOLoop::Stream->new($proc->read_handle);
+  my $r = Mojo::IOLoop::Stream->new($child->read_handle);
   $self->ioloop->stream($r);
 
   my $buffer = '';
@@ -53,11 +52,13 @@ sub start {
   $r->on( close => sub {
     my $res = $self->deserialize->($buffer);
     $self->emit( finish => @$res );
-    return unless $proc;
-    $proc->kill(9) unless $proc->is_complete; 
-    $proc->wait;
+    return unless $child;
+    $child->kill(9) unless $child->is_complete; 
+    $child->wait;
   });
 }
+
+sub _child { Child->new($_[1], pipe => 1)->start }
 
 sub fork_call (&@) {
   my $cb = pop;
