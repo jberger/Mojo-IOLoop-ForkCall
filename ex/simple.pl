@@ -2,7 +2,7 @@
 
 use Mojo::Base -strict;
 use Mojo::IOLoop;
-use Mojo::IOLoop::ForkCall;
+use Mojo::IOLoop::ForkCall qw/fork_call/;
 
 Mojo::IOLoop->recurring( 1 => sub { say 'tick' } );
 

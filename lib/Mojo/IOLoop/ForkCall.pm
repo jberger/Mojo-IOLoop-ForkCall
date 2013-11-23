@@ -1,6 +1,6 @@
 package Mojo::IOLoop::ForkCall;
 
-use Mojo::Base -strict;
+use Mojo::Base 'Mojo::EventEmitter';
 
 our $VERSION = '0.01';
 $VERSION = eval $VERSION;
@@ -11,11 +11,23 @@ use Storable ();
 
 use Exporter 'import';
 
-our @EXPORT = qw/fork_call/;
+our @EXPORT_OK = qw/fork_call/;
 
-sub fork_call (&@) {
-  my $cb = pop;
-  my ($job, @args) = @_;
+has 'ioloop' => sub { Mojo::IOLoop->singleton };
+has 'job';
+
+sub new { 
+  my $class = shift;
+  if (@_ == 1 and ref $_[0] eq 'CODE') {
+    unshift @_, 'job';
+  }
+  return $class->SUPER::new(@_);
+}
+
+sub start {
+  my ($self, @args) = @_;
+  my $loop = $self->ioloop;
+  my $job = $self->job;
 
   my $child = Child->new(sub {
     my $parent = shift;
@@ -28,7 +40,7 @@ sub fork_call (&@) {
     $res = Storable::freeze([$@]) if $@;
     
     my $w = Mojo::IOLoop::Stream->new($parent->write_handle);
-    Mojo::IOLoop->stream($w);
+    $loop->stream($w);
     $w->on( close => sub { exit(0) } );
     $w->on( drain => sub { shift->close } );
     $parent->write($res);
@@ -36,13 +48,24 @@ sub fork_call (&@) {
 
   my $proc = $child->start;
   my $r = Mojo::IOLoop::Stream->new($proc->read_handle);
-  Mojo::IOLoop->stream($r);
+  $loop->stream($r);
   $r->on( close => sub { $proc->is_complete || $proc->kill(9); $proc->wait } );
   $r->on( read  => sub { 
     my $res = Storable::thaw($_[1]);
-    local $@ = shift @$res;
-    $cb->(@$res);
+    $self->emit( finish => @$res );
   });
+}
+
+sub fork_call (&@) {
+  my $cb = pop;
+  my ($job, @args) = @_;
+  my $fc = __PACKAGE__->new( job => $job );
+  $fc->on( finish => sub {
+    shift;
+    local $@ = shift;
+    $cb->(@_);
+  });
+  $fc->start;
 }
 
 1;

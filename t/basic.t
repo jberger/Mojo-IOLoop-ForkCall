@@ -2,7 +2,7 @@ use Test::More;
 
 use Mojo::Base -strict;
 use Mojo::IOLoop;
-use Mojo::IOLoop::ForkCall;
+use Mojo::IOLoop::ForkCall qw/fork_call/;
 
 my $tick = 0;
 Mojo::IOLoop->recurring( 1 => sub { $tick++ } );
