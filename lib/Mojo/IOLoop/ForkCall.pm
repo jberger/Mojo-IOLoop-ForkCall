@@ -54,7 +54,7 @@ sub start {
     my $res = $self->deserialize->($buffer);
     $self->emit( finish => @$res );
     return unless $proc;
-    $proc->is_complete || $proc->kill(9); 
+    $proc->kill(9) unless $proc->is_complete; 
     $proc->wait;
   });
 }
