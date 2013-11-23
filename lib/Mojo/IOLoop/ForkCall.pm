@@ -62,10 +62,8 @@ sub start {
   my $buffer = '';
   $r->on( read  => sub { $buffer .= $_[1] } );
   $r->on( close => sub {
-    my $res = do {
-      local $@;
-      eval { $self->deserialize->($buffer) } || [$@];
-    };
+    local $@;
+    my $res = eval { $self->deserialize->($buffer) } || [$@];
     $self->emit( finish => @$res );
     return unless $child;
     $child->kill(9) unless $child->is_complete; 
