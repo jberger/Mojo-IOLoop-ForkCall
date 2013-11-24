@@ -49,12 +49,12 @@ sub new {
 
 sub run {
   my $self = shift;
-  my $method = $self->can('run_via_' . $self->via) 
+  my $method = $self->can('_run_via_' . $self->via) 
     or die 'Cannot run via ' . $self->via;
   $self->$method(@_);
 }
 
-sub run_via_child_pipe {
+sub _run_via_child_pipe {
   my ($self, @args) = @_;
   my $job = $self->job;
   my $serializer = $self->serializer;
@@ -80,7 +80,7 @@ sub run_via_child_pipe {
 
 sub _child { Child->new($_[1], pipe => 1)->start }
 
-sub run_via_server {
+sub _run_via_server {
   my ($self, @args) = @_;
   my $job = $self->job;
   my $serializer = $self->serializer;
