@@ -41,17 +41,17 @@ sub new {
   return $self;
 }
 
-# sub start {
-#   my $self = shift;
-#   $self->run(@_);
-#   $self->ioloop->start unless $self->ioloop->is_running;
-# }
+sub start {
+  my $self = shift;
+  $self->ioloop->start unless $self->ioloop->is_running;
+}
 
 sub run {
   my $self = shift;
   my $method = $self->can('_run_via_' . $self->via) 
     or die 'Cannot run via ' . $self->via;
   $self->$method(@_);
+  return $self;
 }
 
 sub _run_via_child_pipe {

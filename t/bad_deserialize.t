@@ -14,8 +14,7 @@ ok ! $err;
 is $res, 'Lived';
 
 $fc->deserializer(sub{ die "Died\n" });
-$fc->run;
-$fc->ioloop->start;
+$fc->run->start;
 
 chomp $err;
 is $err, 'Died';
