@@ -35,7 +35,11 @@ sub run {
   my $buffer = '';
   $stream->on( read  => sub { $buffer .= $_[1] } );
   $stream->on( close => sub {
-    $self->_emit_result($buffer);
+    my $res = do {
+      local $@;
+      eval { $self->deserializer->($buffer) } || [$@];
+    };
+    $self->emit( finish => @$res );
     return unless $child;
     $child->kill(9) unless $child->is_complete; 
     $child->wait;
@@ -43,15 +47,6 @@ sub run {
 }
 
 sub _child { Child->new($_[1], pipely => 1)->start }
-
-sub _emit_result {
-  my ($self, $buffer) = @_;
-  my $res = do {
-    local $@;
-    eval { $self->deserializer->($buffer) } || [$@];
-  };
-  $self->emit( finish => @$res );
-}
 
 ## functions
 
