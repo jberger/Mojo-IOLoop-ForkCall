@@ -14,26 +14,14 @@ use Exporter 'import';
 
 our @EXPORT_OK = qw/fork_call/;
 
-use constant WINDOWS => ($ENV{FORKCALL_EMULATE_WINDOWS} // Perl::OSType::is_os_type('Windows'));
-
 has 'ioloop' => sub { Mojo::IOLoop->singleton };
 has 'serializer'   => sub { \&Storable::freeze };
 has 'deserializer' => sub { \&Storable::thaw   };
-has 'via' => sub { WINDOWS ? 'server' : 'child_pipe' };
 
 sub run {
-  my $self = shift;
-  my $method = $self->can('_run_via_' . $self->via) 
-    or die 'Cannot run via ' . $self->via;
+  my ($self, $job, $args, $cb) = @_;
+  $self->once( finish => $cb ) if $cb;
 
-  my $job  = shift;
-  my $args = shift;
-  $self->once( finish => shift ) if @_;
-  $self->$method($job, $args);
-}
-
-sub _run_via_child_pipe {
-  my ($self, $job, $args) = @_;
   my $serializer = $self->serializer;
 
   my $child = $self->_child(sub {
@@ -55,42 +43,7 @@ sub _run_via_child_pipe {
   });
 }
 
-sub _child { Child->new($_[1], pipe => 1)->start }
-
-sub _run_via_server {
-  my ($self, $job, $args) = @_;
-  my $serializer = $self->serializer;
-  my $ioloop = $self->ioloop;
-
-  my %bind = (
-    address => '127.0.0.1',
-    port    => $ioloop->generate_port,
-  );
-  my $pid = fork;
-  if ($pid) {
-    # parent
-    $ioloop->server(%bind, sub {
-      my ($ioloop, $stream, $id) = @_;
-      my $buffer = '';
-      $stream->on( read  => sub { $buffer .= $_[1] } );
-      $stream->on( close => sub {
-        $self->_emit_result($buffer);
-        # kill 9, $pid if WINDOWS; 
-        waitpid $pid, 0; 
-        $ioloop->remove($id);
-      });
-    });
-  } else {
-    # child
-    my $res = _evaluate_job($serializer, $job, $args);
-    $ioloop->client(%bind, sub {
-      my ($loop, $err, $stream) = @_;
-      $stream->on( close => sub { exit(0) } );
-      $stream->on( drain => sub { shift->close } );
-      $stream->write($res);
-    });
-  }
-}
+sub _child { Child->new($_[1], pipely => 1)->start }
 
 sub _emit_result {
   my ($self, $buffer) = @_;
