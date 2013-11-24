@@ -13,11 +13,13 @@ use Exporter 'import';
 
 our @EXPORT_OK = qw/fork_call/;
 
+use constant WINDOWS => ($ENV{FORKCALL_EMULATE_WINDOWS} // $^O eq 'MSWIN32');
+
 has 'ioloop' => sub { Mojo::IOLoop->singleton };
 has 'job';
 has 'serializer'   => sub { \&Storable::freeze };
 has 'deserializer' => sub { \&Storable::thaw   };
-has 'via' => sub { $^O eq 'MSWin32' ? 'server' : 'child_pipe' };
+has 'via' => sub { WINDOWS ? 'server' : 'child_pipe' };
 
 sub new {
   no warnings 'uninitialized';
@@ -39,9 +41,16 @@ sub new {
   return $self;
 }
 
-sub start {
+# sub start {
+#   my $self = shift;
+#   $self->run(@_);
+#   $self->ioloop->start unless $self->ioloop->is_running;
+# }
+
+sub run {
   my $self = shift;
-  my $method = $self->can('run_via_' . $self->via) or die 'Cannot run via ' . $self->via;
+  my $method = $self->can('run_via_' . $self->via) 
+    or die 'Cannot run via ' . $self->via;
   $self->$method(@_);
 }
 
@@ -75,29 +84,30 @@ sub run_via_server {
   my ($self, @args) = @_;
   my $job = $self->job;
   my $serializer = $self->serializer;
+  my $ioloop = $self->ioloop;
 
   my %bind = (
     address => '127.0.0.1',
-    port    => Mojo::IOLoop->generate_port,
+    port    => $ioloop->generate_port,
   );
   my $pid = fork;
   if ($pid) {
     # parent
-    Mojo::IOLoop->server(%bind, sub {
-      my ($loop, $stream) = @_;
+    $ioloop->server(%bind, sub {
+      my ($ioloop, $stream, $id) = @_;
       my $buffer = '';
       $stream->on( read  => sub { $buffer .= $_[1] } );
       $stream->on( close => sub {
         $self->emit_result($buffer);
-        #kill 9, $pid; 
+        # kill 9, $pid if WINDOWS; 
         waitpid $pid, 0; 
-        # clean up server?
+        $ioloop->remove($id);
       });
     });
   } else {
     # child
     my $res = _evaluate_job($serializer, $job, @args);
-    Mojo::IOLoop->client(%bind, sub {
+    $ioloop->client(%bind, sub {
       my ($loop, $err, $stream) = @_;
       $stream->on( close => sub { exit(0) } );
       $stream->on( drain => sub { shift->close } );
@@ -138,7 +148,7 @@ sub fork_call (&@) {
     local $@ = shift;
     $cb->(@_);
   });
-  $fc->start;
+  $fc->run;
 }
 
 1;

@@ -19,7 +19,7 @@ $fc->on(finish => sub{
   $fc->ioloop->stop;
 });
 
-$fc->start;
+$fc->run;
 $fc->ioloop->start;
 
 ok $received, 'received something from child' and diag "got: $received";
