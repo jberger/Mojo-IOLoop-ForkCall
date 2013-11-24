@@ -8,12 +8,13 @@ $VERSION = eval $VERSION;
 use Mojo::IOLoop;
 use Child;
 use Storable ();
+use Perl::OSType;
 
 use Exporter 'import';
 
 our @EXPORT_OK = qw/fork_call/;
 
-use constant WINDOWS => ($ENV{FORKCALL_EMULATE_WINDOWS} // $^O eq 'MSWIN32');
+use constant WINDOWS => ($ENV{FORKCALL_EMULATE_WINDOWS} // Perl::OSType::is_os_type('Windows'));
 
 has 'ioloop' => sub { Mojo::IOLoop->singleton };
 has 'job';
