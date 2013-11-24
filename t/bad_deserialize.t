@@ -4,17 +4,19 @@ use Mojo::IOLoop::ForkCall;
 
 use Test::More;
 
+my $job = sub{'Lived'};
 my ($err, $res);
-my $fc = Mojo::IOLoop::ForkCall->new(sub{'Lived'});
+my $fc = Mojo::IOLoop::ForkCall->new;
 $fc->on(finish => sub { my $fc = shift; $err = shift; $res = shift; $fc->ioloop->stop });
-$fc->run;
+$fc->run($job);
 $fc->ioloop->start;
 
 ok ! $err;
 is $res, 'Lived';
 
 $fc->deserializer(sub{ die "Died\n" });
-$fc->run->start;
+$fc->run($job);
+$fc->ioloop->start;
 
 chomp $err;
 is $err, 'Died';

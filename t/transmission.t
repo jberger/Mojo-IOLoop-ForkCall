@@ -10,7 +10,8 @@ use Test::More;
 
 use constant DEBUG => $ENV{FORKCALL_TEST_DEBUG};
 
-my $fc = Mojo::IOLoop::ForkCall->new(sub{'Lived'});
+my $job = sub{'Lived'};
+my $fc  = Mojo::IOLoop::ForkCall->new;
 
 my $received;
 $fc->serializer(sub{my $f = Storable::freeze($_[0]); diag "sending: $f" if DEBUG; $f});
@@ -24,7 +25,8 @@ $fc->on(finish => sub{
   $fc->ioloop->stop;
 });
 
-$fc->run->start;
+$fc->run($job);
+$fc->ioloop->start;
 
 ok $received, 'received something from child';
 diag "got: $received" if DEBUG;
