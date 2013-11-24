@@ -14,7 +14,6 @@ my $build = Module::Build->new(
     'Mojolicious'        => '4.0',
     'Child'              => 0,
     'Child::IPC::Pipely' => 0,
-    'Perl::OSType'       => 0,
   },
   meta_merge => {
     resources => {

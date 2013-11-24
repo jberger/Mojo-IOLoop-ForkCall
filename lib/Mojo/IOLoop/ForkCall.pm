@@ -8,7 +8,6 @@ $VERSION = eval $VERSION;
 use Mojo::IOLoop;
 use Child;
 use Storable ();
-use Perl::OSType;
 
 use Exporter 'import';
 
