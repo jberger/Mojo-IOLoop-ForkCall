@@ -8,8 +8,8 @@ use Test::More;
 my $fc = Mojo::IOLoop::ForkCall->new(sub{'Lived'});
 
 my $received;
-$fc->serialize(sub{my $f = Storable::freeze($_[0]); diag "sending: $f"; $f});
-$fc->deserialize(sub{$received = $_[0]; Storable::thaw($_[0])});
+$fc->serializer(sub{my $f = Storable::freeze($_[0]); diag "sending: $f"; $f});
+$fc->deserializer(sub{$received = $_[0]; Storable::thaw($_[0])});
 
 my ($err, @res);
 $fc->on(finish => sub{

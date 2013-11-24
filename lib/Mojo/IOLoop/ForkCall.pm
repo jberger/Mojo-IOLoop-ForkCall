@@ -15,8 +15,9 @@ our @EXPORT_OK = qw/fork_call/;
 
 has 'ioloop' => sub { Mojo::IOLoop->singleton };
 has 'job';
-has 'serialize'   => sub { \&Storable::freeze };
-has 'deserialize' => sub { \&Storable::thaw   };
+has 'serializer'   => sub { \&Storable::freeze };
+has 'deserializer' => sub { \&Storable::thaw   };
+has 'via' => sub { $^O eq 'MSWin32' ? 'server' : 'child_pipe' };
 
 sub new {
   no warnings 'uninitialized';
@@ -39,20 +40,19 @@ sub new {
 }
 
 sub start {
+  my $self = shift;
+  my $method = $self->can('run_via_' . $self->via) or die 'Cannot run via ' . $self->via;
+  $self->$method(@_);
+}
+
+sub run_via_child_pipe {
   my ($self, @args) = @_;
   my $job = $self->job;
-  my $serialize = $self->serialize;
+  my $serializer = $self->serializer;
 
   my $child = $self->_child(sub {
     my $parent = shift;
-
-    local $@;
-    my $res = eval {
-      local $SIG{__DIE__};
-      $serialize->([undef, $job->(@args)]);
-    };
-    $res = $serialize->([$@]) if $@;
-
+    my $res = _evaluate_job($serializer, $job, @args);
     $parent->write($res);
   });
 
@@ -62,11 +62,7 @@ sub start {
   my $buffer = '';
   $r->on( read  => sub { $buffer .= $_[1] } );
   $r->on( close => sub {
-    my $res = do {
-      local $@;
-      eval { $self->deserialize->($buffer) } || [$@];
-    };
-    $self->emit( finish => @$res );
+    $self->emit_result($buffer);
     return unless $child;
     $child->kill(9) unless $child->is_complete; 
     $child->wait;
@@ -74,6 +70,64 @@ sub start {
 }
 
 sub _child { Child->new($_[1], pipe => 1)->start }
+
+sub run_via_server {
+  my ($self, @args) = @_;
+  my $job = $self->job;
+  my $serializer = $self->serializer;
+
+  my %bind = (
+    address => '127.0.0.1',
+    port    => Mojo::IOLoop->generate_port,
+  );
+  my $pid = fork;
+  if ($pid) {
+    # parent
+    Mojo::IOLoop->server(%bind, sub {
+      my ($loop, $stream) = @_;
+      my $buffer = '';
+      $stream->on( read  => sub { $buffer .= $_[1] } );
+      $stream->on( close => sub {
+        $self->emit_result($buffer);
+        #kill 9, $pid; 
+        waitpid $pid, 0; 
+        # clean up server?
+      });
+    });
+  } else {
+    # child
+    my $res = _evaluate_job($serializer, $job, @args);
+    Mojo::IOLoop->client(%bind, sub {
+      my ($loop, $err, $stream) = @_;
+      $stream->on( close => sub { exit(0) } );
+      $stream->on( drain => sub { shift->close } );
+      $stream->write($res);
+    });
+  }
+}
+
+sub emit_result {
+  my ($self, $buffer) = @_;
+  my $res = do {
+    local $@;
+    eval { $self->deserializer->($buffer) } || [$@];
+  };
+  $self->emit( finish => @$res );
+}
+
+## functions
+
+# since this is called on child, avoid closing over self
+sub _evaluate_job {
+  my ($serializer, $job, @args) = @_;
+  local $@;
+  my $res = eval {
+    local $SIG{__DIE__};
+    $serializer->([undef, $job->(@args)]);
+  };
+  $res = $serializer->([$@]) if $@;
+  return $res;
+}
 
 sub fork_call (&@) {
   my $cb = pop;

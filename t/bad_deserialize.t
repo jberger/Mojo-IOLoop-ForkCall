@@ -13,7 +13,7 @@ $fc->ioloop->start;
 ok ! $err;
 is $res, 'Lived';
 
-$fc->deserialize(sub{ die "Died\n" });
+$fc->deserializer(sub{ die "Died\n" });
 $fc->start;
 $fc->ioloop->start;
 
