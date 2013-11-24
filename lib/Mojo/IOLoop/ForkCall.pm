@@ -124,7 +124,7 @@ sub fork_call (&@) {
     local $@ = shift;
     $cb->(@_);
   });
-  $fc->run($job);
+  $fc->run($job, @args);
 }
 
 1;
