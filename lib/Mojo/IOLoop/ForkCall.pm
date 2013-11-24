@@ -78,7 +78,7 @@ sub _run_via_child_pipe {
   my $buffer = '';
   $r->on( read  => sub { $buffer .= $_[1] } );
   $r->on( close => sub {
-    $self->emit_result($buffer);
+    $self->_emit_result($buffer);
     return unless $child;
     $child->kill(9) unless $child->is_complete; 
     $child->wait;
@@ -105,7 +105,7 @@ sub _run_via_server {
       my $buffer = '';
       $stream->on( read  => sub { $buffer .= $_[1] } );
       $stream->on( close => sub {
-        $self->emit_result($buffer);
+        $self->_emit_result($buffer);
         # kill 9, $pid if WINDOWS; 
         waitpid $pid, 0; 
         $ioloop->remove($id);
@@ -123,7 +123,7 @@ sub _run_via_server {
   }
 }
 
-sub emit_result {
+sub _emit_result {
   my ($self, $buffer) = @_;
   my $res = do {
     local $@;
