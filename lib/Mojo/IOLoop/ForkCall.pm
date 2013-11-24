@@ -25,7 +25,12 @@ sub run {
 
   my $child = $self->_child(sub {
     my $parent = shift;
-    my $res = _evaluate_job($serializer, $job, $args);
+    local $@;
+    my $res = eval {
+      local $SIG{__DIE__};
+      $serializer->([undef, $job->(@$args)]);
+    };
+    $res = $serializer->([$@]) if $@;
     $parent->write($res);
   });
 
@@ -49,18 +54,6 @@ sub run {
 sub _child { Child->new($_[1], pipely => 1)->start }
 
 ## functions
-
-# since this is called on child, avoid closing over self
-sub _evaluate_job {
-  my ($serializer, $job, $args) = @_;
-  local $@;
-  my $res = eval {
-    local $SIG{__DIE__};
-    $serializer->([undef, $job->(@$args)]);
-  };
-  $res = $serializer->([$@]) if $@;
-  return $res;
-}
 
 sub fork_call (&@) {
   my $cb = pop;
