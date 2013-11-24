@@ -54,6 +54,12 @@ sub run {
   return $self;
 }
 
+sub run_with_callback {
+  my $self = shift;
+  $self->once( finish => pop );
+  return $self->run(@_);
+}
+
 sub _run_via_child_pipe {
   my ($self, @args) = @_;
   my $job = $self->job;
