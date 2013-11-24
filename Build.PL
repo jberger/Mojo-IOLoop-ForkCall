@@ -11,10 +11,10 @@ my $build = Module::Build->new(
   license            => 'perl',
   configure_requires => { 'Module::Build' => 0.38 },
   requires => {
-    'Mojolicious'  => '4.0',
-    'Child'        => 0,
-    'Perl::OSType' => 0,
-    'IO::Pipely'   => 0,
+    'Mojolicious'        => '4.0',
+    'Child'              => 0,
+    'Child::IPC::Pipely' => 0,
+    'Perl::OSType'       => 0,
   },
   meta_merge => {
     resources => {
