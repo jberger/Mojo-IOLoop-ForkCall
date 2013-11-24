@@ -14,7 +14,7 @@ use Exporter 'import';
 
 our @EXPORT_OK = qw/fork_call/;
 
-has 'ioloop' => sub { Mojo::IOLoop->singleton };
+has 'ioloop'       => sub { Mojo::IOLoop->singleton };
 has 'serializer'   => sub { \&Storable::freeze };
 has 'deserializer' => sub { \&Storable::thaw   };
 
@@ -30,12 +30,12 @@ sub run {
     $parent->write($res);
   });
 
-  my $r = Mojo::IOLoop::Stream->new($child->read_handle);
-  $self->ioloop->stream($r);
+  my $stream = Mojo::IOLoop::Stream->new($child->read_handle);
+  $self->ioloop->stream($stream);
 
   my $buffer = '';
-  $r->on( read  => sub { $buffer .= $_[1] } );
-  $r->on( close => sub {
+  $stream->on( read  => sub { $buffer .= $_[1] } );
+  $stream->on( close => sub {
     $self->_emit_result($buffer);
     return unless $child;
     $child->kill(9) unless $child->is_complete; 
