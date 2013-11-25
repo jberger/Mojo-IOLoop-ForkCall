@@ -46,7 +46,7 @@ sub run {
     };
     $self->emit( finish => @$res );
     return unless $child;
-    $child->kill(9) unless $child->is_complete; 
+    # $child->kill(9) unless $child->is_complete; 
     $child->wait;
   });
 }
