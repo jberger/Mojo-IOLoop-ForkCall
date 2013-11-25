@@ -18,8 +18,9 @@ has 'serializer'   => sub { \&Storable::freeze };
 has 'deserializer' => sub { \&Storable::thaw   };
 
 sub run {
-  my ($self, $job, $args, $cb) = @_;
-  $self->once( finish => $cb ) if $cb;
+  my ($self, $job) = (shift, shift);
+  my $args = shift if @_ and ref $_[0] eq 'ARRAY';
+  $self->once( finish => shift ) if @_;
 
   my $serializer = $self->serializer;
 
@@ -56,15 +57,15 @@ sub _child { Child->new($_[1], pipely => 1)->start }
 ## functions
 
 sub fork_call (&@) {
-  my $cb = pop;
-  my ($job, @args) = @_;
+  my $job = shift;
+  my $cb  = pop;
   my $fc = __PACKAGE__->new;
   $fc->on( finish => sub {
     shift;
     local $@ = shift;
     $cb->(@_);
   });
-  $fc->run($job, @args);
+  $fc->run($job, \@_);
 }
 
 1;
