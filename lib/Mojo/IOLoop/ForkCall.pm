@@ -70,3 +70,35 @@ sub fork_call (&@) {
 
 1;
 
+
+__END__
+
+=head1 NAME
+
+Mojo::IOLoop::ForkCall - run blocking functions asynchronously by forking
+
+=head1 SYNOPSIS
+
+ use Mojo::IOLoop::ForkCall
+ my $fc = Mojo::IOLoop::ForkCall->new;
+ $fc->run(
+   \&expensive_function,
+   ['arg', 'list'], 
+   sub { my ($fc, $err, @return) = @_; ... }
+ );
+ $fc->ioloop->start unless $fc->ioloop->is_running;
+
+=head1 DESCRIPTION
+
+Asynchronous programming can be benefitial for performance, however not all functions are
+written for nonblocking interaction and external processes almost never are.
+Still, all is not lost.
+By forking the blocking call into a new process, the main thread may continue to run non-blocking.
+Mojo::IOLoop::ForkCall managaes the forking and will emit an event (or execute a callback)
+when the fork completes.
+Return values are serialized and sent from the child to the parent via an appropriate pipe
+for your platform.
+
+This module is heavily inspired by L<AnyEvent::Util>'s C<fork_call>.
+
+
