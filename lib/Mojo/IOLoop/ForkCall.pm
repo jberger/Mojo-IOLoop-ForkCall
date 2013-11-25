@@ -16,6 +16,7 @@ our @EXPORT_OK = qw/fork_call/;
 has 'ioloop'       => sub { Mojo::IOLoop->singleton };
 has 'serializer'   => sub { \&Storable::freeze };
 has 'deserializer' => sub { \&Storable::thaw   };
+has 'weaken'       => 0;
 
 sub run {
   my ($self, $job) = (shift, shift);
@@ -40,6 +41,10 @@ sub run {
 
   my $buffer = '';
   $stream->on( read  => sub { $buffer .= $_[1] } );
+  if ($self->weaken) {
+    require Scalar::Util;
+    Scalar::Util::weaken($self);
+  }
   $stream->on( close => sub {
     my $res = do {
       local $@;
