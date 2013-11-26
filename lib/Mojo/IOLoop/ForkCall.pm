@@ -20,7 +20,7 @@ has 'deserializer' => sub { \&Storable::thaw   };
 sub run {
   my ($self, $job) = (shift, shift);
   my $args = shift if @_ and ref $_[0] eq 'ARRAY';
-  $self->once( finish => shift ) if @_;
+  my $cb   = shift if @_;
 
   my $serializer = $self->serializer;
 
@@ -45,6 +45,7 @@ sub run {
       local $@;
       eval { $self->deserializer->($buffer) } || [$@];
     };
+    $self->$cb(@$res) if $cb;
     $self->emit( finish => @$res );
     return unless $child;
     # $child->kill(9) unless $child->is_complete; 
@@ -93,12 +94,93 @@ Mojo::IOLoop::ForkCall - run blocking functions asynchronously by forking
 Asynchronous programming can be benefitial for performance, however not all functions are
 written for nonblocking interaction and external processes almost never are.
 Still, all is not lost.
-By forking the blocking call into a new process, the main thread may continue to run non-blocking.
-Mojo::IOLoop::ForkCall managaes the forking and will emit an event (or execute a callback)
-when the fork completes.
-Return values are serialized and sent from the child to the parent via an appropriate pipe
-for your platform.
+
+By forking the blocking call into a new process, the main thread may continue to run non-blocking, while the blocking call evaluates.
+Mojo::IOLoop::ForkCall manages the forking and will emit an event (or execute a callback) when the forked process completes.
+Return values are serialized and sent from the child to the parent via an appropriate pipe for your platform.
 
 This module is heavily inspired by L<AnyEvent::Util>'s C<fork_call>.
+
+=head1 WARNINGS
+
+The forked process should not attempt any interaction with the parent process's event loop.
+This includes doing anything that would emit an event in the parent.
+In fact, it's probably best to avoid any event-based processing in the child.
+
+Some platforms do not fork well, some platforms don't pipe well.
+This module and the libraries it relies on do their best to smooth over these difference.
+Still some attention should be paid to platform specific usage, especially on Windows.
+Efficiency/performance on Windows is not likely to be very good.
+
+=head1 EXPORTED FUNCTIONS
+
+Upon request this module exports the following functions.
+
+=head2 fork_call
+
+ fork_call { my @args = @_; child code; return @res }, @args, sub { my @res = @_; parent callback }
+
+This function is a drop-in replacement for L<AnyEvent::Util>'s C<fork_call>.
+Because it is attempting to mimic that function the api is different to that provided by the OO interface descibed below.
+
+The function takes a block to be performed in the child, a list of arguments to pass to the block, and a callback to be run on completion.
+Note that the callback is required and that the arguments are given as a list, not an arrayreference (unlike the OO style).
+The callback will receive the deserialized return values from the child block as C<@_>.
+Any error will be available in C<$@>.
+
+The underlying ForkCall object will use the default attributes described below.
+
+=head1 EVENTS
+
+This module inherits all events from L<Mojo::EventEmitter> and implements the following addtional ones.
+
+=head2 finish
+
+ my $fc = Mojo::IOLoop::ForkCall->new;
+ $fc->on( finish => sub {
+   my ($fc, $err, @res) = @_;
+   ...
+ });
+
+Emitted in the parent process once the child process completes and sends its results.
+The callback is passed the ForkCall instance, any error, then all deserialized results from the child.
+
+=head1 ATTRIBUTES
+
+This module inherits all attributes from L<Mojo::EventEmitter> and implements the following additional ones.
+
+=head2 ioloop
+
+The L<Mojo::IOLoop> instance which is used internally.
+Defaults to C<< Mojo::IOLoop->singleton >>.
+
+=head2 serializer
+
+A code reference to serialize the results of the child process to send to the parent.
+Note that as this code reference is called in the child, some care should be taken when setting it to something other than the defaults.
+Defaults to C<\&Storable::freeze>.
+
+The code reference will be passed a single array reference. 
+The first argument will be any error or undef if no error occured.
+If there was no error, the remaining element of the array will be the values returned by the job (evaluated in list context).
+
+=head2 deserializer
+
+A code reference used to deserialize the results of the child process.
+Defaults to C<\&Storable::thaw>.
+This should be the logical inverse of the C<serializer>.
+
+=head1 METHODS
+
+This module inherits all METHODS from L<Mojo::EventEmitter> and implements the following additional ones.
+
+=head2 run
+
+ my $fc = Mojo::IOLoop::ForkCall->new;
+ $fc->run( sub { my @args = @_; child code; return @res }, \@args, $cb );
+
+Takes a code reference (required) which is the job to be run on the child.
+If the next argument is an array reference, these will be passed to the child job.
+If the last argument is a code reference, it will be called immediately before the finish event is emitted..
 
 
