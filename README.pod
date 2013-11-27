@@ -95,6 +95,14 @@ A code reference used to deserialize the results of the child process.
 Defaults to C<\&Storable::thaw>.
 This should be the logical inverse of the C<serializer>.
 
+=head2 weaken
+
+If true, the reference to the ForkCall object will be weakened in the internals to prevent a possible memory leak should the child process never close.
+In this case, if you do not maintain a reference to the ForkCall object, the first argument to the callback will be undef.
+Additionally, the finish event may not be emitted.
+Defaults to false.
+Do not use this unless you know what you are doing and why!
+
 =head1 METHODS
 
 This module inherits all METHODS from L<Mojo::EventEmitter> and implements the following additional ones.
@@ -110,3 +118,29 @@ If the last argument is a code reference, it will be called immediately before t
 
 Returns the L<Child> object, just in case you should need to manually kill it.
 
+=head1 SEE ALSO
+
+=over
+
+=item L<Child>
+
+=item L<IO::Pipely>
+
+=item L<AnyEvent::Util>
+
+=back
+
+=head1 SOURCE REPOSITORY
+
+L<http://github.com/jberger/Mojo-IOLoop-ForkCall> 
+
+=head1 AUTHOR
+
+Joel Berger, E<lt>joel.a.berger@gmail.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2013 by Joel Berger
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.

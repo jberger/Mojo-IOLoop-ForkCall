@@ -35,7 +35,7 @@ subtest 'Weak' => sub {
   $ioloop->reactor->on( error => sub { $loop_err++ } );
   $ioloop->start;
 
-  ok $loop_err, 'Error thrown by ioloop (at emit)';
+  ok ! $loop_err, 'No error thrown by ioloop (at emit)';
   ok ! $fc, 'ForkCall was weakened correctly';
 };
 
