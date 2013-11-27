@@ -2,21 +2,43 @@ use Mojo::Base -strict;
 use Mojo::IOLoop::ForkCall;
 
 use Test::More;
-use Devel::Peek 'SvREFCNT';
 
-my $fc = Mojo::IOLoop::ForkCall->new(weaken => 1);
+sub generate {
+  my ($weaken, $cb) = @_;
+  my $fc = Mojo::IOLoop::ForkCall->new(weaken => $weaken);
+  my $ioloop = $fc->ioloop;
 
-my $res;
-$fc->run(sub{ sleep 2; return shift }, ['Done'], sub {
-  my ($fc, $err, $r) = @_;
-  $res = $r;
-  $fc->ioloop->stop;
-});
-is SvREFCNT($fc), 1, 'ForkCall instance has correct ref count';
+  $fc->run(sub{ sleep 2; return shift }, ['Done'], sub {
+    $cb->(@_);
+    $ioloop->stop;
+  });
+  return $ioloop;
+};
 
-$fc->ioloop->start;
+subtest 'Strong' => sub {
+  my ($fc, $res);
+  my $ioloop = generate(0, sub { 
+    my ($f, $e, $r) = @_;
+    $fc = $f;
+    $res = $r;
+  });
+  $ioloop->start;
+  ok $fc, 'ForkCall survived';
+  is $res, 'Done', 'correct response';
+};
 
-is $res, 'Done', 'got correct response';
+subtest 'Weak' => sub {
+  my $fc;
+  my $ioloop = generate(1, sub { $fc = shift });
+  my $loop_err = 0;
+  $ioloop->reactor->unsubscribe('error');
+  $ioloop->reactor->on( error => sub { $loop_err++ } );
+  $ioloop->start;
+
+  ok $loop_err, 'Error thrown by ioloop (at emit)';
+  ok ! $fc, 'ForkCall was weakened correctly';
+};
+
 
 done_testing;
 
