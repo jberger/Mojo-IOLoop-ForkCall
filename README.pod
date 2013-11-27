@@ -114,7 +114,7 @@ This module inherits all METHODS from L<Mojo::EventEmitter> and implements the f
 
 Takes a code reference (required) which is the job to be run on the child.
 If the next argument is an array reference, these will be passed to the child job.
-If the last argument is a code reference, it will be called immediately before the finish event is emitted.
+If the last argument is a code reference, it will be called immediately before the finish event is emitted, its arguments are the same as the C<finish> event.
 
 Returns the L<Child> object, just in case you should need to manually kill it.
 
