@@ -8,7 +8,7 @@ sub generate {
   my $fc = Mojo::IOLoop::ForkCall->new(weaken => $weaken);
   my $ioloop = $fc->ioloop;
 
-  $fc->run(sub{ sleep 2; return shift }, ['Done'], sub {
+  $fc->run(sub{ return shift }, ['Done'], sub {
     $cb->(@_);
     $ioloop->stop;
   });
