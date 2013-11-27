@@ -66,7 +66,7 @@ sub _child { Child->new($_[1], pipely => 1)->start }
 sub fork_call (&@) {
   my $job = shift;
   my $cb  = pop;
-  __PACKAGE__->new->run($job, \@_, sub {
+  return __PACKAGE__->new->run($job, \@_, sub {
     # local $_ = shift; #TODO think about this
     shift;
     local $@ = shift;
