@@ -7,15 +7,14 @@ $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
 use Child;
-use Storable ();
 
 use Exporter 'import';
 
 our @EXPORT_OK = qw/fork_call/;
 
 has 'ioloop'       => sub { Mojo::IOLoop->singleton };
-has 'serializer'   => sub { \&Storable::freeze };
-has 'deserializer' => sub { \&Storable::thaw   };
+has 'serializer'   => sub { require Storable; \&Storable::freeze };
+has 'deserializer' => sub { require Storable; \&Storable::thaw   };
 has 'weaken'       => 0;
 
 sub run {
@@ -67,13 +66,12 @@ sub _child { Child->new($_[1], pipely => 1)->start }
 sub fork_call (&@) {
   my $job = shift;
   my $cb  = pop;
-  my $fc = __PACKAGE__->new;
-  $fc->on( finish => sub {
+  __PACKAGE__->new->run($job, \@_, sub {
+    # local $_ = shift; #TODO think about this
     shift;
     local $@ = shift;
     $cb->(@_);
   });
-  return $fc->run($job, \@_);
 }
 
 1;
