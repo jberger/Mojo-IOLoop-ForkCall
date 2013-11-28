@@ -32,7 +32,7 @@ This includes doing anything that would emit an event in the parent.
 In fact, it's probably best to avoid any event-based processing in the child.
 
 Some platforms do not fork well, some platforms don't pipe well.
-This module and the libraries it relies on do their best to smooth over these difference.
+This module and the libraries it relies on do their best to smooth over these differences.
 Still some attention should be paid to platform specific usage, especially on Windows.
 Efficiency/performance on Windows is not likely to be very good.
 
