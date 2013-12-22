@@ -1,3 +1,5 @@
+BEGIN { $ENV{MOJO_REACTOR} = 'Mojo::Reactor::Poll' }
+
 use Mojo::Base -strict;
 
 use Mojo::IOLoop::ForkCall;
