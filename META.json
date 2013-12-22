@@ -4,7 +4,7 @@
       "Joel Berger <joel.a.berger@gmail.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.42",
+   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -30,7 +30,7 @@
    "provides" : {
       "Mojo::IOLoop::ForkCall" : {
          "file" : "lib/Mojo/IOLoop/ForkCall.pm",
-         "version" : "0.01"
+         "version" : "0.02"
       }
    },
    "release_status" : "stable",
@@ -45,5 +45,5 @@
          "url" : "https://github.com/jberger/Mojo-IOLoop-ForkCall"
       }
    },
-   "version" : "0.01"
+   "version" : "0.02"
 }

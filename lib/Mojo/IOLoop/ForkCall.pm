@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -20,8 +20,9 @@ has 'weaken'       => 0;
 
 sub run {
   my ($self, $job) = (shift, shift);
-  my $args = shift if @_ and ref $_[0] eq 'ARRAY';
-  my $cb   = shift if @_;
+  my ($args, $cb);
+  $args = shift if @_ and ref $_[0] eq 'ARRAY';
+  $cb   = shift if @_;
 
   my $serializer = $self->serializer;
 
