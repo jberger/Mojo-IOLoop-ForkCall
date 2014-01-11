@@ -17,8 +17,7 @@ provides:
     file: lib/Mojo/IOLoop/ForkCall.pm
     version: 0.02
 requires:
-  Child: 0
-  Child::IPC::Pipely: 0
+  IO::Pipely: 0
   Mojolicious: 4.0
 resources:
   bugtracker: https://github.com/jberger/Mojo-IOLoop-ForkCall/issues

@@ -6,8 +6,7 @@ our $VERSION = '0.02';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
-use Child;
-# use Child::IPC::Pipely;
+use IO::Pipely 'pipely';
 
 use Exporter 'import';
 
@@ -24,44 +23,52 @@ sub run {
   $args = shift if @_ and ref $_[0] eq 'ARRAY';
   $cb   = shift if @_;
 
+  my ($r, $w) = pipely; 
   my $serializer = $self->serializer;
 
-  my $child = $self->_child(sub {
-    my $parent = shift;
+  my $pid = fork;
+  if (not defined $pid) {
+    die "Failed to fork: $!";
+  }
+  if ($pid == 0) {
+    # child
+    close $r;
     local $@;
     my $res = eval {
       local $SIG{__DIE__};
       $serializer->([undef, $job->(@$args)]);
     };
     $res = $serializer->([$@]) if $@;
-    $parent->write($res);
-  });
+    syswrite $w, $res;
 
-  my $stream = Mojo::IOLoop::Stream->new($child->read_handle);
-  $self->ioloop->stream($stream);
+    exit 0;
+  } else {
+    # parent
+    close $w;
 
-  my $buffer = '';
-  $stream->on( read  => sub { $buffer .= $_[1] } );
-  if ($self->weaken) {
-    require Scalar::Util;
-    Scalar::Util::weaken($self);
+    my $stream = Mojo::IOLoop::Stream->new($r);
+    $self->ioloop->stream($stream);
+
+    my $buffer = '';
+    $stream->on( read  => sub { $buffer .= $_[1] } );
+    if ($self->weaken) {
+      require Scalar::Util;
+      Scalar::Util::weaken($self);
+    }
+    $stream->on( close => sub {
+      my $res = do {
+        local $@;
+        eval { $self->deserializer->($buffer) } || [$@];
+      };
+      $self->$cb(@$res) if $cb;
+      $self->emit( finish => @$res ) if $self;
+
+      waitpid $pid, 0;
+    });
+
+    return $pid;
   }
-  $stream->on( close => sub {
-    my $res = do {
-      local $@;
-      eval { $self->deserializer->($buffer) } || [$@];
-    };
-    $self->$cb(@$res) if $cb;
-    $self->emit( finish => @$res ) if $self;
-    return unless $child;
-    # $child->kill(9) unless $child->is_complete; 
-    $child->wait;
-  });
-
-  return $child;
 }
-
-sub _child { Child->new($_[1], pipely => 1)->start }
 
 ## functions
 

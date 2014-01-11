@@ -21,8 +21,7 @@
       },
       "runtime" : {
          "requires" : {
-            "Child" : "0",
-            "Child::IPC::Pipely" : "0",
+            "IO::Pipely" : "0",
             "Mojolicious" : "4.0"
          }
       }

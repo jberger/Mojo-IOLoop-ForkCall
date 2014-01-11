@@ -12,8 +12,7 @@ my $build = Module::Build->new(
   configure_requires => { 'Module::Build' => 0.38 },
   requires => {
     'Mojolicious'        => '4.0',
-    'Child'              => 0,
-    'Child::IPC::Pipely' => 0,
+    'IO::Pipely' => 0,
   },
   meta_merge => {
     resources => {
