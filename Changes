@@ -1,5 +1,8 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.03 2014-01-19
+  - Remove Child.pm in hopes of stomping some strange bugs
+
 0.02 2013-12-21
   - Fix some nagging warnings and test failures
 
