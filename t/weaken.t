@@ -30,8 +30,8 @@ subtest 'Strong' => sub {
 };
 
 subtest 'Weak' => sub {
-  my $fc;
-  my $ioloop = generate(1, sub { $fc = shift });
+  my ($fc, $res);
+  my $ioloop = generate(1, sub { $fc = shift; shift; $res = shift; });
   my $loop_err = 0;
   $ioloop->reactor->unsubscribe('error');
   $ioloop->reactor->on( error => sub { $loop_err++ } );
@@ -39,6 +39,7 @@ subtest 'Weak' => sub {
 
   ok ! $loop_err, 'No error thrown by ioloop (at emit)';
   ok ! $fc, 'ForkCall was weakened correctly';
+  is $res, 'Done', 'correct response';
 };
 
 

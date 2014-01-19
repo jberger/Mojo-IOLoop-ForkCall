@@ -55,10 +55,12 @@ sub run {
       require Scalar::Util;
       Scalar::Util::weaken($self);
     }
+
+    my $deserializer = $self->deserializer;
     $stream->on( close => sub {
       my $res = do {
         local $@;
-        eval { $self->deserializer->($buffer) } || [$@];
+        eval { $deserializer->($buffer) } || [$@];
       };
       $self->$cb(@$res) if $cb;
       $self->emit( finish => @$res ) if $self;
