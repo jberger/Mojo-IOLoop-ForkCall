@@ -33,6 +33,7 @@ sub run {
   if ($pid == 0) {
     # child
     close $r;
+
     local $@;
     my $res = eval {
       local $SIG{__DIE__};
@@ -51,6 +52,7 @@ sub run {
 
     my $buffer = '';
     $stream->on( read  => sub { $buffer .= $_[1] } );
+
     if ($self->weaken) {
       require Scalar::Util;
       Scalar::Util::weaken($self);
