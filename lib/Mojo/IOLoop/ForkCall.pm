@@ -27,9 +27,8 @@ sub run {
   my $serializer = $self->serializer;
 
   my $pid = fork;
-  if (not defined $pid) {
-    die "Failed to fork: $!";
-  }
+  die "Failed to fork: $!" unless defined $pid;
+
   if ($pid == 0) {
     # child
     close $r;
