@@ -45,7 +45,7 @@ sub run {
     syswrite $w, $res;
 
     # attempt to generalize exiting from child cleanly on all platforms
-    # adapted from POE::Wheel::Run mosty
+    # adapted from POE::Wheel::Run mostly
     eval { POSIX::_exit(0) } unless IS_WINDOWS;
     eval { CORE::kill KILL => $$ };
     exit 0;
