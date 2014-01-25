@@ -1,5 +1,8 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.05 
+  - Avoid copying the "is windows" check into children
+
 0.04 2014-01-25
   - Attempt an even better method of exitting the child
   - Add test for sending largish messages from the child
