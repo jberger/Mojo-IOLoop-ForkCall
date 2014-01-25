@@ -1,5 +1,9 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.04 2014-01-25
+  - Attempt an even better method of exitting the child
+  - Add test for sending largish messages from the child
+
 0.03 2014-01-19
   - Remove Child.pm in hopes of stomping some strange bugs
 
