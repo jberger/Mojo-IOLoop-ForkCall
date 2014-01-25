@@ -22,7 +22,8 @@
       "runtime" : {
          "requires" : {
             "IO::Pipely" : "0",
-            "Mojolicious" : "4.0"
+            "Mojolicious" : "4.0",
+            "Perl::OSType" : "0"
          }
       }
    },
