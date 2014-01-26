@@ -42,7 +42,10 @@ sub run {
       $serializer->([undef, $job->(@$args)]);
     };
     $res = $serializer->([$@]) if $@;
-    syswrite $w, $res;
+    
+    my $len = length $res;
+    my $written = 0;
+    $written += syswrite $w, $res, 65536, $written while $written < $len;
 
     # attempt to generalize exiting from child cleanly on all platforms
     # adapted from POE::Wheel::Run mostly
