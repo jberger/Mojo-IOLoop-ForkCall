@@ -10,9 +10,12 @@ sub gen_string {
   while (length $string < $l) {
     $string .= $chars[rand @chars];
   }
+  return $string;
 }
 
 my $s = gen_string;
+ok length $s > 65536, 'test is useful';
+
 my $got;
 
 my $fc = Mojo::IOLoop::ForkCall->new;
