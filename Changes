@@ -1,5 +1,8 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.06 2014-02-09
+  - Fix bug in tests
+
 0.05 2014-01-25 
   - Optimize windows checking
   - Fix useless (broken?) test
