@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.06';
+our $VERSION = '0.060_001';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -11,6 +11,7 @@ use POSIX ();
 
 use Perl::OSType 'is_os_type';
 use constant IS_WINDOWS => is_os_type('Windows');
+use constant IS_CYGWIN  => $^O eq 'cygwin';
 
 use Exporter 'import';
 our @EXPORT_OK = qw/fork_call/;
@@ -42,10 +43,8 @@ sub run {
       $serializer->([undef, $job->(@$args)]);
     };
     $res = $serializer->([$@]) if $@;
-    
-    my $len = length $res;
-    my $written = 0;
-    $written += syswrite $w, $res, 65536, $written while $written < $len;
+   
+    _send($w, $res);
 
     # attempt to generalize exiting from child cleanly on all platforms
     # adapted from POE::Wheel::Run mostly
@@ -95,6 +94,17 @@ sub fork_call (&@) {
     local $@ = shift;
     $cb->(@_);
   });
+}
+
+sub _send {
+  my ($h, $data) = @_;
+  if (IS_WINDOWS || IS_CYGWIN) {
+    my $len = length $data;
+    my $written = 0;
+    $written += syswrite $h, $data, 65536, $written while $written < $len;
+  } else {
+    syswrite $h, $data;
+  }
 }
 
 1;

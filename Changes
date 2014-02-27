@@ -1,5 +1,8 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.060_001 2014-02-27
+  - Trial to attempt to fix cygwin test failures, lumping native windows in too
+
 0.06 2014-02-09
   - Fix bug in tests
 

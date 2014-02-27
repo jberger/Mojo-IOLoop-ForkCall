@@ -30,10 +30,10 @@
    "provides" : {
       "Mojo::IOLoop::ForkCall" : {
          "file" : "lib/Mojo/IOLoop/ForkCall.pm",
-         "version" : "0.06"
+         "version" : "0.060_001"
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/jberger/Mojo-IOLoop-ForkCall/issues"
@@ -45,5 +45,5 @@
          "url" : "https://github.com/jberger/Mojo-IOLoop-ForkCall"
       }
    },
-   "version" : "0.06"
+   "version" : "0.060_001"
 }
