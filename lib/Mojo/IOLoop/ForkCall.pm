@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.060_001';
+our $VERSION = '0.07';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;

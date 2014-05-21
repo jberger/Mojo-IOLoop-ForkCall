@@ -1,5 +1,9 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.07 2014-05-21
+  - Stable release of 0.060_001 which did fix the cygwin bug.
+    - Windows perls now use buffered write
+
 0.060_001 2014-02-27
   - Trial to attempt to fix cygwin test failures, lumping native windows in too
 

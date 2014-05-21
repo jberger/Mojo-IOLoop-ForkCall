@@ -4,7 +4,7 @@
       "Joel Berger <joel.a.berger@gmail.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4203",
+   "generated_by" : "Module::Build version 0.4205",
    "license" : [
       "perl_5"
    ],
@@ -30,10 +30,10 @@
    "provides" : {
       "Mojo::IOLoop::ForkCall" : {
          "file" : "lib/Mojo/IOLoop/ForkCall.pm",
-         "version" : "0.060_001"
+         "version" : "0.07"
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/jberger/Mojo-IOLoop-ForkCall/issues"
@@ -45,5 +45,5 @@
          "url" : "https://github.com/jberger/Mojo-IOLoop-ForkCall"
       }
    },
-   "version" : "0.060_001"
+   "version" : "0.07"
 }
