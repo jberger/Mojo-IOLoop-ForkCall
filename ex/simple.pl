@@ -6,7 +6,7 @@ use Mojo::IOLoop::ForkCall qw/fork_call/;
 
 Mojo::IOLoop->recurring( 1 => sub { say 'tick' } );
 
-fork_call { sleep 3; return 'Some', ['Items'] } sub {
+fork_call { sleep 20; return 'Some', ['Items'] } sub {
   die $@ if $@;
   use Data::Dumper;
   print Dumper \@_;

@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -56,7 +56,7 @@ sub run {
     # parent
     close $w;
 
-    my $stream = Mojo::IOLoop::Stream->new($r);
+    my $stream = Mojo::IOLoop::Stream->new($r)->timeout(0);
     $self->ioloop->stream($stream);
 
     my $buffer = '';
@@ -241,6 +241,16 @@ Returns the child's pid, just in case you should need to manually kill it.
 =item L<AnyEvent::Util>
 
 =item L<IO::Pipely>
+
+=back
+
+=head1 FUTURE WORK
+
+=over
+
+=item *
+
+Investigate hooking into the L<Mojo::IOLoop::Stream/timeout> event to kill runaway children.
 
 =back
 

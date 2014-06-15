@@ -130,6 +130,16 @@ Returns the child's pid, just in case you should need to manually kill it.
 
 =back
 
+=head1 FUTURE WORK
+
+=over
+
+=item *
+
+Investigate hooking into the L<Mojo::IOLoop::Stream/timeout> event to kill runaway children.
+
+=back
+
 =head1 SOURCE REPOSITORY
 
 L<http://github.com/jberger/Mojo-IOLoop-ForkCall> 

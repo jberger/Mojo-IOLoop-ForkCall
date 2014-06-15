@@ -1,5 +1,9 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.08 2014-06-15
+  - Set stream timeout to 0 to prevent long-running processes failing
+  - Add note about future work on timeouts
+
 0.07 2014-05-21
   - Stable release of 0.060_001 which did fix the cygwin bug.
     - Windows perls now use buffered write
