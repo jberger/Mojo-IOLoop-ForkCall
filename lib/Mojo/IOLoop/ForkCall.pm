@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -150,25 +150,6 @@ This module and the libraries it relies on do their best to smooth over these di
 Still some attention should be paid to platform specific usage, especially on Windows.
 Efficiency/performance on Windows is not likely to be very good.
 
-=head1 EXPORTED FUNCTIONS
-
-Upon request this module exports the following functions.
-
-=head2 fork_call
-
- fork_call { my @args = @_; child code; return @res } @args, sub { my @res = @_; parent callback }
-
-This function is a drop-in replacement for L<AnyEvent::Util>'s C<fork_call>.
-Because it is attempting to mimic that function the api is different to that provided by the OO interface descibed below.
-
-The function takes a block to be performed in the child, a list of arguments to pass to the block, and a callback to be run on completion.
-Note that the callback is required and that the arguments are given as a list, not an arrayreference (unlike the OO style).
-The callback will receive the deserialized return values from the child block as C<@_>.
-Any error will be available in C<$@>.
-
-The underlying ForkCall object will use the default attributes described below.
-As with C<run> the return value is the child's pid, just in case it is necessary to kill the child process.
-
 =head1 EVENTS
 
 This module inherits all events from L<Mojo::EventEmitter> and implements the following addtional ones.
@@ -183,6 +164,7 @@ This module inherits all events from L<Mojo::EventEmitter> and implements the fo
 
 Emitted in the parent process once the child process completes and sends its results.
 The callback is passed the ForkCall instance, any error, then all deserialized results from the child.
+Note that this event is called for each C<run> completion; to schedule a callback for a single call, pass the callback to C<run> itself.
 
 =head1 ATTRIBUTES
 
@@ -231,6 +213,26 @@ If the next argument is an array reference, these will be passed to the child jo
 If the last argument is a code reference, it will be called immediately before the finish event is emitted, its arguments are the same as the C<finish> event.
 
 Returns the child's pid, just in case you should need to manually kill it.
+
+=head1 EXPORTED FUNCTIONS
+
+Upon request this module exports the following functions.
+
+=head2 fork_call
+
+ fork_call { my @args = @_; child code; return @res } @args, sub { my @res = @_; parent callback }
+
+This function is a drop-in replacement for L<AnyEvent::Util>'s C<fork_call>, with the exception of the fork limiting/queueing that that function provides.
+Because it is attempting to mimic that function the api is different to that provided by the OO interface descibed above.
+This function is provided for ease of porting from AnyEvent's function; for new code, please use the OO syntax.
+
+The function takes a block to be performed in the child, a list of arguments to pass to the block, and a callback to be run on completion.
+Note that the callback is required and that the arguments are given as a list, not an arrayreference (unlike the OO style).
+The callback will receive the deserialized return values from the child block as C<@_>.
+Any error will be available in C<$@>.
+
+The underlying ForkCall object will use its default attributes.
+As with C<run> the return value is the child's pid, just in case it is necessary to kill the child process.
 
 =head1 SEE ALSO
 

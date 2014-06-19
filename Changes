@@ -1,5 +1,9 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.09
+  - Added additional tests
+  - De-emphasize the functional interface in the documentation
+
 0.08 2014-06-15
   - Set stream timeout to 0 to prevent long-running processes failing
   - Add note about future work on timeouts
