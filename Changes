@@ -1,5 +1,9 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.10 2014-07-04
+  - Child now resets the IOLoop
+  - Bump Mojolicious version to 5.08
+
 0.09 2014-06-21
   - Added additional tests
   - De-emphasize the functional interface in the documentation

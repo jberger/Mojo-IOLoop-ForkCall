@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -28,6 +28,7 @@ sub run {
   $cb   = shift if @_;
 
   my ($r, $w) = pipely; 
+  my $ioloop = $self->ioloop;
   my $serializer = $self->serializer;
 
   my $pid = fork;
@@ -35,6 +36,7 @@ sub run {
 
   if ($pid == 0) {
     # child
+    $ioloop->reset;
     close $r;
 
     local $@;

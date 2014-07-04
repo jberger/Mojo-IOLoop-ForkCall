@@ -15,13 +15,13 @@ name: Mojo-IOLoop-ForkCall
 provides:
   Mojo::IOLoop::ForkCall:
     file: lib/Mojo/IOLoop/ForkCall.pm
-    version: '0.09'
+    version: '0.10'
 requires:
   IO::Pipely: '0'
-  Mojolicious: '4.0'
+  Mojolicious: '5.08'
   Perl::OSType: '0'
 resources:
   bugtracker: https://github.com/jberger/Mojo-IOLoop-ForkCall/issues
   license: http://dev.perl.org/licenses/
   repository: https://github.com/jberger/Mojo-IOLoop-ForkCall
-version: '0.09'
+version: '0.10'
