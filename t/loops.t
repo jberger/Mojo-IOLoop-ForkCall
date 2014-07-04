@@ -1,9 +1,10 @@
+BEGIN { $ENV{MOJO_REACTOR} = 'Mojo::Reactor::Poll' }
+
 use Mojo::Base -strict;
 
 use Mojo::IOLoop;
 use Mojo::IOLoop::ForkCall;
 use Test::More;
-
 
 subtest 'singleton' => sub {
   my $fc = Mojo::IOLoop::ForkCall->new;

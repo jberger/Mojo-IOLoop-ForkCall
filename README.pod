@@ -27,14 +27,14 @@ This module is heavily inspired by L<AnyEvent::Util>'s C<fork_call>.
 
 =head1 WARNINGS
 
-The forked process should not attempt any interaction with the parent process's event loop.
-This includes doing anything that would emit an event in the parent.
-In fact, it's probably best to avoid any event-based processing in the child.
-
 Some platforms do not fork well, some platforms don't pipe well.
 This module and the libraries it relies on do their best to smooth over these differences.
 Still some attention should be paid to platform specific usage, especially on Windows.
 Efficiency/performance on Windows is not likely to be very good.
+
+N.B. There was previously a warning about using event-based programming in the child.
+As of version 0.10, this warning is lifted as the child process will reset the singleton loop, as well as the loop refered to in the ForkCall instance.
+Still, use with caution, and no running with scissors!
 
 =head1 EVENTS
 
