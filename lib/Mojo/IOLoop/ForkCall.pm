@@ -28,16 +28,19 @@ sub run {
   $cb   = shift if @_;
 
   my ($r, $w) = pipely; 
-  my $ioloop = $self->ioloop;
-  my $serializer = $self->serializer;
 
   my $pid = fork;
   die "Failed to fork: $!" unless defined $pid;
 
   if ($pid == 0) {
     # child
-    $ioloop->reset;
+
+    # cleanup running loops
+    delete $self->{ioloop};
+    Mojo::IOLoop->reset;
     close $r;
+
+    my $serializer = $self->serializer;
 
     local $@;
     my $res = eval {
