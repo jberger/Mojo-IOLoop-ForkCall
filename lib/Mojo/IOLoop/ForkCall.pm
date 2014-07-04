@@ -36,7 +36,8 @@ sub run {
     # child
 
     # cleanup running loops
-    delete $self->{ioloop};
+    $self->ioloop->reset;
+    delete $self->{ioloop}; # not sure this is needed
     Mojo::IOLoop->reset;
     close $r;
 
