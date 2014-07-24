@@ -1,0 +1,8 @@
+MANIFEST
+META.*
+MYMETA.*
+Build
+*.tar.gz
+_build/
+Mojo-IOLoop-ForkCall-*/
+
