@@ -23,10 +23,8 @@ has 'deserializer' => sub { require Storable; \&Storable::thaw   };
 has 'weaken'       => 0;
 
 sub run {
-  my $self = shift;
-  Scalar::Util::weaken($self);
-  my @args = @_;
-  $self->ioloop->next_tick(sub{ $self->_run(@args) });
+  my ($self, @args) = @_;
+  $self->ioloop->delay(sub{ $self->_run(@args) });
 }
 
 sub _run {
