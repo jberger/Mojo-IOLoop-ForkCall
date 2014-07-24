@@ -90,7 +90,7 @@ sub _run {
       waitpid $child, 0;
     });
 
-    return $child;
+    $self->emit(spawn => $child);
   }
 }
 
@@ -177,6 +177,16 @@ Emitted in the parent process once the child process completes and sends its res
 The callback is passed the ForkCall instance, any error, then all deserialized results from the child.
 Note that this event is called for each C<run> completion; to schedule a callback for a single call, pass the callback to C<run> itself.
 
+=head2 spawn
+
+ my $fc = Mojo::IOLoop::ForkCall->new;
+ $fc->on( spawn => sub {
+   my ($fc, $pid) = @_;
+   ...
+ });
+
+Emitted in the parent process once the child has been successfully forked and sends its pid.
+
 =head1 ATTRIBUTES
 
 This module inherits all attributes from L<Mojo::EventEmitter> and implements the following additional ones.
@@ -222,8 +232,6 @@ This module inherits all METHODS from L<Mojo::EventEmitter> and implements the f
 Takes a code reference (required) which is the job to be run on the child.
 If the next argument is an array reference, these will be passed to the child job.
 If the last argument is a code reference, it will be called immediately before the finish event is emitted, its arguments are the same as the C<finish> event.
-
-Returns the child's pid, just in case you should need to manually kill it.
 
 =head1 EXPORTED FUNCTIONS
 
