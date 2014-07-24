@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -25,6 +25,7 @@ has 'weaken'       => 0;
 sub run {
   my ($self, @args) = @_;
   $self->ioloop->delay(sub{ $self->_run(@args) });
+  return $self;
 }
 
 sub _run {
@@ -68,6 +69,7 @@ sub _run {
     # parent
     close $w;
     my $parent = $$;
+    $self->emit( spawn => $child );
 
     my $stream = Mojo::IOLoop::Stream->new($r)->timeout(0);
     $self->ioloop->stream($stream);
@@ -89,8 +91,6 @@ sub _run {
 
       waitpid $child, 0;
     });
-
-    return $child;
   }
 }
 
@@ -167,15 +167,21 @@ This module inherits all events from L<Mojo::EventEmitter> and implements the fo
 
 =head2 finish
 
- my $fc = Mojo::IOLoop::ForkCall->new;
  $fc->on( finish => sub {
-   my ($fc, $err, @res) = @_;
+   my ($fc, $err, @return_values) = @_;
    ...
  });
 
 Emitted in the parent process once the child process completes and sends its results.
 The callback is passed the ForkCall instance, any error, then all deserialized results from the child.
 Note that this event is called for each C<run> completion; to schedule a callback for a single call, pass the callback to C<run> itself.
+
+=head2 spawn
+
+ $fc->on( spawn => sub { my ($fc, $child_pid) = @_; ... } );
+
+Emitted in the parent process when a child process is spawned.
+The callback is passed the ForkCall instance and the child pid.
 
 =head1 ATTRIBUTES
 
@@ -217,13 +223,16 @@ This module inherits all METHODS from L<Mojo::EventEmitter> and implements the f
 =head2 run
 
  my $fc = Mojo::IOLoop::ForkCall->new;
- $fc->run( sub { my @args = @_; child code; return @res }, \@args, $cb );
+ $fc = $fc->run( 
+   sub { my @args = @_; ... return @res }, 
+   \@args,
+   sub { my ($fc, $err, @return_values) = @_; ... }
+ );
 
 Takes a code reference (required) which is the job to be run on the child.
 If the next argument is an array reference, these will be passed to the child job.
 If the last argument is a code reference, it will be called immediately before the finish event is emitted, its arguments are the same as the C<finish> event.
 
-Returns the child's pid, just in case you should need to manually kill it.
 
 =head1 EXPORTED FUNCTIONS
 
@@ -243,7 +252,7 @@ The callback will receive the deserialized return values from the child block as
 Any error will be available in C<$@>.
 
 The underlying ForkCall object will use its default attributes.
-As with C<run> the return value is the child's pid, just in case it is necessary to kill the child process.
+The return value is the created ForkCall instance.
 
 =head1 SEE ALSO
 
