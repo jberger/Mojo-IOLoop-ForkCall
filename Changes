@@ -3,6 +3,7 @@ Revision history for Perl module Mojo::IOLoop::ForkCall
 0.12 2014-07-24
   - Change return value from pid to instance (pid was broken by 0.11)
   - Added spawn event
+  - Fixed bug while send result to main process if socket already closed (avkhozov++)
 
 0.11 2014-07-23
   - Fix bug in which children might try to trigger each other's callbacks

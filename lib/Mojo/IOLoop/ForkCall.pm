@@ -34,7 +34,7 @@ sub _run {
   $args = shift if @_ and ref $_[0] eq 'ARRAY';
   $cb   = shift if @_;
 
-  my ($r, $w) = pipely; 
+  my ($r, $w) = pipely;
 
   my $child = fork;
   die "Failed to fork: $!" unless defined $child;
@@ -112,9 +112,13 @@ sub _send {
   if (IS_WINDOWS || IS_CYGWIN) {
     my $len = length $data;
     my $written = 0;
-    $written += syswrite $h, $data, 65536, $written while $written < $len;
+    while ($written < $len) {
+      my $count = syswrite $h, $data, 65536, $written;
+      unless (defined $count) { warn $!; last }
+      $written += $count;
+    }
   } else {
-    syswrite $h, $data;
+    warn $! unless defined syswrite $h, $data;
   }
 }
 
