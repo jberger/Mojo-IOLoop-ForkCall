@@ -23,14 +23,28 @@ Mojo::IOLoop->start;
 ok $tick, 'main process not blocked';
 is_deeply \@res, [ $fc, undef, $pid, ['test']], 'return value correct';
 
-my $err;
-$fc->run( 
-  sub { die "Died!\n" },
-  sub { shift; $err = shift; Mojo::IOLoop->stop },
-);
-Mojo::IOLoop->start;
-chomp $err;
-is $err, 'Died!';
+{
+  my $err;
+  $fc->run( 
+    sub { die "Died!\n" },
+    sub { shift; $err = shift; Mojo::IOLoop->stop },
+  );
+  Mojo::IOLoop->start;
+  chomp $err;
+  is $err, 'Died!';
+}
+
+{
+  my $err;
+  $fc->on( error => sub { $err = $_[1]; Mojo::IOLoop->stop } );
+  $fc->run(
+    sub { return 1 },
+    sub { die "Argh\n" },
+  );
+  Mojo::IOLoop->start;
+  chomp $err;
+  is $err, 'Argh';
+}
 
 done_testing;
 
