@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -24,7 +24,8 @@ has 'weaken'       => 0;
 
 sub run {
   my ($self, @args) = @_;
-  $self->ioloop->delay(sub{ $self->_run(@args) });
+  my $delay = $self->ioloop->delay(sub{ $self->_run(@args) });
+  $delay->catch(sub{ $self->emit( error => $_[1] ) });
   return $self;
 }
 
@@ -79,15 +80,27 @@ sub _run {
 
     Scalar::Util::weaken($self) if $self->weaken;
 
+    $stream->on( error => sub { $self->emit( error => $_[1] ) if $self } );
+
     my $deserializer = $self->deserializer;
     $stream->on( close => sub {
       return unless $$ == $parent; # not my stream!
-      my $res = do {
-        local $@;
-        eval { $deserializer->($buffer) } || [$@];
-      };
-      $self->$cb(@$res) if $cb;
-      $self->emit( finish => @$res ) if $self;
+      local $@;
+
+      # attempt to deserialize, emit error and return early
+      my $res = eval { $deserializer->($buffer) };
+      if ($@) { 
+        $self->emit( error => $@ ) if $self;
+        waitpid $child, 0;
+        return;
+      }
+
+      # call the callback, emit error if it fails
+      eval { $self->$cb(@$res) if $cb };
+      $self->emit( error => $@ ) if $@ and $self;
+
+      # emit the finish event, emit error if IT fails
+      $self->emit_safe( finish => @$res ) if $self;
 
       waitpid $child, 0;
     });
@@ -168,6 +181,13 @@ Still, use with caution, and no running with scissors!
 =head1 EVENTS
 
 This module inherits all events from L<Mojo::EventEmitter> and implements the following addtional ones.
+
+=head2 error
+
+ $fc->on( error => sub { my ($fc, $err) = @_; } );
+
+Emitted in the parent when the parent process encounters an error.
+Fatal if not handled.
 
 =head2 finish
 

@@ -1,5 +1,8 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.13 2014-08-16
+  - Added error event for parent-process errors
+
 0.12 2014-07-24
   - Change return value from pid to instance (pid was broken by 0.11)
   - Added spawn event
