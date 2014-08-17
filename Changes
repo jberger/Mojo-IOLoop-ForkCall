@@ -1,5 +1,9 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.14 2014-08-17
+  - Fixed test failure on Perl < v5.14 (though the bug is unfixable!)
+    - Added pod warning that fork_call on old Perls certain errors can be silently missed
+
 0.13 2014-08-16
   - Added error event for parent-process errors
 

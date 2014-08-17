@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -277,6 +277,10 @@ Any error will be available in C<$@>.
 
 The underlying ForkCall object will use its default attributes.
 The return value is the created ForkCall instance.
+
+WARNING: In Perl versions before 5.14, if the parent callback dies, the exception is silently ignored.
+This is a limitation in those Perl interpreters and was fixed in L<5.14|perl5140delta/"Exception Handling">.
+Yet another reason to use the object-oriented interface, which does not suffer from this limitation!
 
 =head1 SEE ALSO
 

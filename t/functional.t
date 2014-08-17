@@ -24,13 +24,14 @@ Mojo::IOLoop->remove($recurring);
   is $err, 'Died!';
 }
 
-{
+SKIP: {
+  skip 'Perl versions < 5.14 handle errors in parent callback badly', 1 if $^V < v5.14.0;
   my $err;
   Mojo::IOLoop->singleton->reactor->unsubscribe('error')->on( error => sub { $err = $_[1]; Mojo::IOLoop->stop } );
   fork_call { return 'ok' } sub { die "Argh\n" };
   Mojo::IOLoop->start;
   chomp $err;
-  like $err, qr/Argh/, 'parent error goes to reactor error handler';
+  like $err, qr/Argh/, 'parent callback error goes to reactor error handler';
 }
 
 done_testing;
