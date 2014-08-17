@@ -27,7 +27,7 @@ Mojo::IOLoop->remove($recurring);
 {
   my $err;
   Mojo::IOLoop->singleton->reactor->unsubscribe('error')->on( error => sub { $err = $_[1]; Mojo::IOLoop->stop } );
-  eval { fork_call { return 'ok' } sub { die "Argh\n" } };
+  fork_call { return 'ok' } sub { die "Argh\n" };
   Mojo::IOLoop->start;
   chomp $err;
   like $err, qr/Argh/, 'parent error goes to reactor error handler';
