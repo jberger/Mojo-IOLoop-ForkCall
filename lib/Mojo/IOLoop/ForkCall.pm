@@ -100,7 +100,10 @@ sub _run {
       $self->emit( error => $@ ) if $@ and $self;
 
       # emit the finish event, emit error if IT fails
-      $self->emit_safe( finish => @$res ) if $self;
+      eval {
+        $self->emit( finish => @$res ) if $self;
+      };
+      $self->emit( error => $@ ) if $@ and $self;
 
       waitpid $child, 0;
     });

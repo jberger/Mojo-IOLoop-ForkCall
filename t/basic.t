@@ -46,5 +46,19 @@ is_deeply \@res, [ $fc, undef, $pid, ['test']], 'return value correct';
   is $err, 'Argh';
 }
 
+{
+  my ($err, $ret);
+  $fc->on( error  => sub { $err = $_[1]; Mojo::IOLoop->stop } );
+  $fc->on( finish => sub { die "Oooof\n" } );
+  $fc->run(
+    sub { return 1 },
+    sub { $ret = pop },
+  );
+  Mojo::IOLoop->start;
+  chomp $err;
+  is $err, 'Oooof';
+  ok $ret, 'callback completes';
+}
+
 done_testing;
 
