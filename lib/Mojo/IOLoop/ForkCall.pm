@@ -87,11 +87,13 @@ sub _run {
       return unless $$ == $parent; # not my stream!
       local $@;
 
+      # clean up the zombie. It won't block, it's already dead.
+      waitpid $child, 0;
+
       # attempt to deserialize, emit error and return early
       my $res = eval { $deserializer->($buffer) };
       if ($@) { 
         $self->emit( error => $@ ) if $self;
-        waitpid $child, 0;
         return;
       }
 
@@ -103,7 +105,6 @@ sub _run {
       eval { $self->emit( finish => @$res ) if $self };
       $self->emit( error => $@ ) if $@ and $self;
 
-      waitpid $child, 0;
     });
   }
 }
