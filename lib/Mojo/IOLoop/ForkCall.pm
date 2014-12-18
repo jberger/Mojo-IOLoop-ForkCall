@@ -226,7 +226,7 @@ Defaults to C<\&Storable::freeze>.
 
 The code reference will be passed a single array reference. 
 The first argument will be any error or undef if no error occured.
-If there was no error, the remaining element of the array will be the values returned by the job (evaluated in list context).
+If there was no error, the remaining elements of the array will be the values returned by the job (evaluated in list context).
 
 =head2 deserializer
 
