@@ -1,12 +1,8 @@
 package Mojolicious::Plugin::ForkCall;
 
-use strict;
-use warnings;
-use Mojo::IOLoop::ForkCall;
-
 use Mojo::Base 'Mojolicious::Plugin';
 
-our $VERSION = '0.001';
+use Mojo::IOLoop::ForkCall;
 
 sub register {
   my ($self, $app) = @_;
@@ -35,6 +31,8 @@ sub register {
   });
 }
 
+1;
+
 =head1 NAME
 
 Mojolicious::Plugin::ForkCall - run blocking code asynchronously in Mojolicious
@@ -43,72 +41,77 @@ applications by forking
 =head1 SYNOPSIS
 
  use Mojolicious::Lite;
+
  plugin 'Mojolicious::Plugin::ForkCall';
+ 
  get '/slow' => sub {
    my $c = shift;
-   $c->fork_call(sub {
-     my @args = @_;
-     return do_slow_stuff(@args);
-   }, [@args], sub {
-     my @return = @_;
-     $c->render(json => \@return);
-   });
+   my @args = ...;
+   $c->fork_call(
+     sub {
+       my @args = @_;
+       return do_slow_stuff(@args);
+     },
+     [@args],
+     sub {
+       my ($c, @return) = @_;
+       $c->render(json => \@return);
+     }
+   );
  };
 
- package My::Mojo::App;
- use Mojo::Base 'Mojolicious';
- sub startup {
-   my $app = shift;
-   $app->plugin('Mojolicious::Plugin::ForkCall');
-   ...routes...
- }
- package My::Mojo::Controller;
- use Mojo::Base 'Mojolicious::Controller';
- sub some_action {
-   my $self = shift;
-   $self->fork_call(sub {
-     my @args = @_;
-     return do_slow_stuff(@args);
-   }, [@args], sub {
-     my @return = @_;
-     $self->render(json => \@return);
-   });
- }
+ ...
+
+ app->start;
 
 =head1 DESCRIPTION
 
-L<Mojolicious::Plugin::ForkCall> adds a helper method C<fork_call> to your
-L<Mojolicious> or L<Mojolicious::Lite> application to run code in a forked
+Registering L<Mojolicious::Plugin::ForkCall> adds a helper method C<fork_call>
+to your L<Mojolicious> application, making it easy to start code in a forked
 process using L<Mojo::IOLoop::ForkCall>.
 
-=head1 METHODS
+Note that it does not increase the timeout of the connection, so if your
+forked process is going to take a very long time, you might need to increase
+that using L<Mojolicious::Plugin::DefaultHelpers/inactivity_timeout>.
+
+=head1 HELPERS
 
 This module adds the following helper method to your application:
 
 =head2 fork_call
 
- $c->fork_call(sub {
-   my @args = @_;
-   # This code is run in a forked process
-   return @return;
- },
- [$arg1, $arg2, $arg3], # Arguments passed to the above code
- sub {
-   my @return = @_;
-   # This code is run in the current process once the child exits
- });
+ $c->fork_call(
+   sub {
+     my @args = @_;
+     # This code is run in a forked process
+     return @return;
+   },
+   [$arg1, $arg2, $arg3], # Optional arguments passed to the above code
+   sub {
+     my ($c, @return) = @_;
+     # This code is run in the current process once the child exits
+   }
+ );
 
- # Code here is run before the async code above
-
-The C<fork_call> method takes up to 3 arguments: a required code reference to
+The C<fork_call> helper takes up to 3 arguments: a required code reference to
 be run in a forked child process, an optional array reference of arguments to
-be passed to the child code, and an optional code reference to be run in the
-parent as a callback. The callback is passed the return value of the child.
+be passed to the child code, and a required code reference to be run in the
+parent as a callback. The callback is passed the controler instance and return 
+values of the child.
 
-If an exception occurs in the child process or in the parent callback, an
-exception will be rendered as normal. This means that the parent callback will
-not be called if the child process encounters an exception.
+The helper relies on the L<Mojolicious> core helper 
+L<Mojolicious::Plugin::DefaultHelpers/delay> and as such it will render an 
+exception (500) page if any uncaught exception occurs in the child process or 
+in the parent callback, an exception will be rendered. This means that the 
+parent callback will not be called if the child process encounters an 
+exception.
+
+This helper is a convenience only and is not indended for complex cases.
+If you need to configure the L<Mojo::IOLoop::ForkCall> instance or want to 
+"fork and forget" a child, you should use the class directly rather than this 
+helper. If more complicated delays are required, you should use the 
+L<Mojolicious::Plugin::DefaultHelpers/delay> helper or L<Mojo::IOLoop/delay>
+method directly, along with an instance of L<Mojo::IOLoop::ForkCall>.
 
 =cut
 
-1;
