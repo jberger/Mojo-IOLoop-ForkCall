@@ -1,34 +1,42 @@
-package TestMojoApp;
-
 use Mojolicious::Lite;
 
 plugin 'Mojolicious::Plugin::ForkCall';
 
 get '/slow' => sub {
   my $c = shift;
-  my $len = $c->param('len') // die 'No sleep length given';
-  $c->fork_call(sub {
-    my $len = shift;
-    die "$len is not a valid sleep length!" unless $len =~ /^\d+$/;
-    sleep $len;
-    return $len;
-  }, [$len], sub {
-    my ($c, $len) = @_;
-    die "$len is too small!" unless $len >= 5;
-    $c->render(json => {len => $len});
-  });
+  my $num = $c->param('num');
+  $c->fork_call(
+    sub {
+      my $num = shift;
+      die "$num is not even" if $num % 2;
+      return $num / 2;
+    }, 
+    [$num], 
+    sub {
+      my ($c, $res) = @_;
+      die "$res is too small!" unless $res >= 5;
+      $c->render(json => {res => $res});
+    },
+  );
 };
 
-package main;
+get '/bad' => sub { shift->fork_call(sub{}) }; my $line = __LINE__;
 
 use Test::More;
 use Test::Mojo;
 
-my $t = Test::Mojo->new('TestMojoApp');
-$t->get_ok('/slow?len=5')->status_is(200)->json_is({len => 5});
-$t->get_ok('/slow?len=1')->status_isnt(200);
-$t->get_ok('/slow?len=asdf')->status_isnt(200);
-$t->get_ok('/slow')->status_isnt(200);
+my $t = Test::Mojo->new;
+$t->get_ok('/slow?num=12')
+  ->status_is(200)
+  ->json_is('/res' => 6);
+$t->get_ok('/slow?num=1')
+  ->status_is(500);
+$t->get_ok('/slow?num=4')
+  ->status_is(500);
+
+$t->get_ok('/bad')
+  ->status_is(500)
+  ->text_like('#error' => qr/$line/);
 
 done_testing;
 

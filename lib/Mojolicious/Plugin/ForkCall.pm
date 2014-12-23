@@ -3,6 +3,8 @@ package Mojolicious::Plugin::ForkCall;
 use Mojo::Base 'Mojolicious::Plugin';
 
 use Mojo::IOLoop::ForkCall;
+use Carp;
+our @CARP_NOT = qw/Mojolicious Mojolicious::Controller/;
 
 sub register {
   my ($self, $app) = @_;
@@ -10,7 +12,7 @@ sub register {
   $app->helper(fork_call => sub {
     my $c = shift;
     unless (@_ > 1 and ref $_[-1] eq 'CODE') {
-      die 'fork_call helper must be passed a callback';
+      croak 'fork_call helper must be passed a callback';
     }
 
     my $cb = pop;
