@@ -2,7 +2,7 @@ package Mojo::IOLoop::ForkCall;
 
 use Mojo::Base 'Mojo::EventEmitter';
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 $VERSION = eval $VERSION;
 
 use Mojo::IOLoop;
@@ -169,6 +169,8 @@ Return values are serialized and sent from the child to the parent via an approp
 
 This module is heavily inspired by L<AnyEvent::Util>'s C<fork_call>.
 
+For simple cases in a L<Mojolicious> web app, a helper is also available in L<Mojolicious::Plugin::ForkCall>.
+
 =head1 WARNINGS
 
 Some platforms do not fork well, some platforms don't pipe well.
@@ -313,6 +315,14 @@ L<http://github.com/jberger/Mojo-IOLoop-ForkCall>
 =head1 AUTHOR
 
 Joel Berger, E<lt>joel.a.berger@gmail.comE<gt>
+
+=head1 CONTRIBUTORS
+
+=over
+
+=item Dan Book (Grinnz)
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 

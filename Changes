@@ -1,5 +1,8 @@
 Revision history for Perl module Mojo::IOLoop::ForkCall
 
+0.16 2014-12-22
+  - Added Mojolicious::Plugin::ForkCall, provides fork_call helper (Grinnz++)
+
 0.15 2014-09-17
   - Replaced use of emit_safe which has been deprecated in Mojo::EventEmitter
 

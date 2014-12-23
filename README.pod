@@ -25,6 +25,8 @@ Return values are serialized and sent from the child to the parent via an approp
 
 This module is heavily inspired by L<AnyEvent::Util>'s C<fork_call>.
 
+For simple cases in a L<Mojolicious> web app, a helper is also available in L<Mojolicious::Plugin::ForkCall>.
+
 =head1 WARNINGS
 
 Some platforms do not fork well, some platforms don't pipe well.
@@ -82,7 +84,7 @@ Defaults to C<\&Storable::freeze>.
 
 The code reference will be passed a single array reference. 
 The first argument will be any error or undef if no error occured.
-If there was no error, the remaining element of the array will be the values returned by the job (evaluated in list context).
+If there was no error, the remaining elements of the array will be the values returned by the job (evaluated in list context).
 
 =head2 deserializer
 
@@ -169,6 +171,14 @@ L<http://github.com/jberger/Mojo-IOLoop-ForkCall>
 =head1 AUTHOR
 
 Joel Berger, E<lt>joel.a.berger@gmail.comE<gt>
+
+=head1 CONTRIBUTORS
+
+=over
+
+=item Dan Book (Grinnz)
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
