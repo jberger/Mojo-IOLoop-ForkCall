@@ -104,9 +104,8 @@ values of the child.
 The helper relies on the L<Mojolicious> core helper 
 L<Mojolicious::Plugin::DefaultHelpers/delay> and as such it will render an 
 exception (500) page if any uncaught exception occurs in the child process or 
-in the parent callback, an exception will be rendered. This means that the 
-parent callback will not be called if the child process encounters an 
-exception.
+in the parent callback. This also means that the parent callback will not be 
+called if the child process encounters an exception.
 
 This helper is a convenience only and is not indended for complex cases.
 If you need to configure the L<Mojo::IOLoop::ForkCall> instance or want to 
