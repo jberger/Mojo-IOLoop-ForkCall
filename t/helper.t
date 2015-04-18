@@ -38,5 +38,14 @@ $t->get_ok('/bad')
   ->status_is(500)
   ->text_like('#error' => qr/$line/);
 
+{
+  no warnings 'once';
+  no warnings 'redefine';
+  local *Mojo::IOLoop::ForkCall::deserializer = sub { sub { die 'argh' } };
+  $t->get_ok('/slow?num=12')
+    ->status_is(500)
+    ->text_like('#error' => qr/argh/);
+}
+
 done_testing;
 

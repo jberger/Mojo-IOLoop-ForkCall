@@ -20,9 +20,11 @@ sub register {
 
     $c->delay(
       sub{
+        my $delay = shift;
+        my $end = $delay->begin;
         Mojo::IOLoop::ForkCall->new
-          ->catch(sub{ die $_[1] })
-          ->run(@args, shift->begin);
+          ->catch($end)
+          ->run(@args, $end);
       },
       sub {
         my ($delay, $err, @return) = @_;
