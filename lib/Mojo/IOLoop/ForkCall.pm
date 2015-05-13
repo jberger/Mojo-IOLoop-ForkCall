@@ -308,6 +308,19 @@ Investigate hooking into the L<Mojo::IOLoop::Stream/timeout> event to kill runaw
 
 =back
 
+=head1 KNOWN ISSUES
+
+=over
+
+=item *
+
+Although in concept this module works on windows, in practical cases running real-world apps with this module on windows might spectularly crash.
+This is unfortunately not solvable from the Perl level and must be addressed in the C level interpreter code.
+The good news is that recent interpreters seem not to be having this issue.
+See L<https://github.com/jberger/Mojo-IOLoop-ForkCall/issues/5>.
+
+=back
+
 =head1 SOURCE REPOSITORY
 
 L<http://github.com/jberger/Mojo-IOLoop-ForkCall> 
