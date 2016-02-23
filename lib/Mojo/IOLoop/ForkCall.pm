@@ -91,10 +91,13 @@ sub _run {
       waitpid $child, 0;
 
       # attempt to deserialize, emit error and return early
-      my $res = eval { $deserializer->($buffer) };
-      if ($@) { 
-        $self->emit( error => $@ ) if $self;
-        return;
+      my $res = ();
+      if (length($buffer)) {
+        eval { $deserializer->($buffer) };
+        if ($@) { 
+          $self->emit( error => $@ ) if $self;
+          return;
+        }
       }
 
       # call the callback, emit error if it fails
