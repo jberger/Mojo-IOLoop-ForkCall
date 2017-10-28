@@ -25,7 +25,7 @@ has 'weaken'       => 0;
 sub run {
   my ($self, @args) = @_;
   my $delay = $self->ioloop->delay(sub{ $self->_run(@args) });
-  $delay->catch(sub{ $self->emit( error => $_[1] ) });
+  $delay->on(error => sub{ $self->emit( error => $_[1] ) });
   return $self;
 }
 
