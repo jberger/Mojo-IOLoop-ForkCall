@@ -57,7 +57,7 @@ sub _run {
       $serializer->([undef, $job->(@$args)]);
     };
     $res = $serializer->([$@]) if $@;
-   
+
     _send($w, $res);
 
     # attempt to generalize exiting from child cleanly on all platforms
@@ -92,7 +92,7 @@ sub _run {
 
       # attempt to deserialize, emit error and return early
       my $res = eval { $deserializer->($buffer) };
-      if ($@) { 
+      if ($@) {
         $self->emit( error => $@ ) if $self;
         return;
       }
@@ -152,7 +152,7 @@ Mojo::IOLoop::ForkCall - run blocking functions asynchronously by forking
  my $fc = Mojo::IOLoop::ForkCall->new;
  $fc->run(
    \&expensive_function,
-   ['arg', 'list'], 
+   ['arg', 'list'],
    sub { my ($fc, $err, @return) = @_; ... }
  );
  $fc->ioloop->start unless $fc->ioloop->is_running;
@@ -226,7 +226,7 @@ A code reference to serialize the results of the child process to send to the pa
 Note that as this code reference is called in the child, some care should be taken when setting it to something other than the defaults.
 Defaults to C<\&Storable::freeze>.
 
-The code reference will be passed a single array reference. 
+The code reference will be passed a single array reference.
 The first argument will be any error or undef if no error occured.
 If there was no error, the remaining elements of the array will be the values returned by the job (evaluated in list context).
 
@@ -251,8 +251,8 @@ This module inherits all METHODS from L<Mojo::EventEmitter> and implements the f
 =head2 run
 
  my $fc = Mojo::IOLoop::ForkCall->new;
- $fc = $fc->run( 
-   sub { my @args = @_; ... return @res }, 
+ $fc = $fc->run(
+   sub { my @args = @_; ... return @res },
    \@args,
    sub { my ($fc, $err, @return_values) = @_; ... }
  );
@@ -323,7 +323,7 @@ See L<https://github.com/jberger/Mojo-IOLoop-ForkCall/issues/5>.
 
 =head1 SOURCE REPOSITORY
 
-L<http://github.com/jberger/Mojo-IOLoop-ForkCall> 
+L<http://github.com/jberger/Mojo-IOLoop-ForkCall>
 
 =head1 AUTHOR
 
