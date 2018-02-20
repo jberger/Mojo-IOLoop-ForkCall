@@ -7,3 +7,5 @@ Build
 _build/
 Mojo-IOLoop-ForkCall-*/
 
+*~
+blib/
