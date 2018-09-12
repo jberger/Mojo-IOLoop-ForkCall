@@ -43,8 +43,7 @@ sub register {
 
 =head1 NAME
 
-Mojolicious::Plugin::ForkCall - run blocking code asynchronously in Mojolicious
-applications by forking
+Mojolicious::Plugin::ForkCall - (DEPRECATED) run blocking code asynchronously in Mojolicious applications by forking
 
 =head1 SYNOPSIS
 
@@ -73,6 +72,10 @@ applications by forking
  app->start;
 
 =head1 DESCRIPTION
+
+DEPRECATED!
+The main module L<Mojo::IOLoop::ForkCall> is deprecated in favor of the L<Mojolicious> core module L<Mojo::IOLoop::Subprocess>.
+This module is also deprecated but in favor of the CPAN module L<Mojolicious::Plugin::Subprocess> which does approximately what this module does but in terms of the core module.
 
 Registering L<Mojolicious::Plugin::ForkCall> adds a helper method C<fork_call>
 to your L<Mojolicious> application, making it easy to start code in a forked
