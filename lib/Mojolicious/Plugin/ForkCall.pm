@@ -18,7 +18,7 @@ sub register {
     my $cb = pop;
     my @args = @_;
 
-    $c->delay(
+    Mojo::IOLoop->delay(
       sub{
         my $end = shift->begin;
         my $once = sub { $end->(@_) if $end; undef $end };
